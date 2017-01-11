@@ -3,11 +3,11 @@
 
 <ul>
 
-<% for (tweet in tweets) { %>
+<% tweets.forEach(function(tweet) { %>
 	
-<li style="list-style-type: none;">tweet</li>
+<li style="list-style-type: none;"><%= tweet %></li>
 
-<% } %>
+<% }) %>
 
 </ul>
 
