@@ -49,6 +49,10 @@ var timelineUrl 				= 'https://api.twitter.com/1.1/statuses/user_timeline.json';
 var tweetUrl 					= 'https://api.twitter.com/1.1/statuses/update.json';
 var verifyCredentialsEndpoint 	= 'https://api.twitter.com/1.1/account/verify_credentials.json';
 
+var Twitter = require('twitter');
+
+const punycode = require('punycode');
+
 var request = require('request'); 
 const querystring = require('querystring');
 
@@ -100,7 +104,19 @@ function verifyCredentials(req, res, next) {
 }
 
 
-var Twitter = require('twitter');
+function numberOfCodepoints(string) {
+	
+	if (typeof(string) == "undefined") return 0;
+	
+	if (string.length == 0) return 0;
+	
+	var normalized = string.normalize('NFC');
+	
+	return punycode.ucs2.decode(normalized).length;
+}
+
+
+
 
 
 app.get('/', verifyCredentials, function(req, res) {
@@ -115,7 +131,7 @@ app.get('/logout', function(req, res) {
 	
 	req.session.destroy(function(error) {
 		
-		if (error) { console.error(error); return; }
+		if (error) console.error(error);
 		
 		console.log('session destroyed');
 
@@ -124,9 +140,34 @@ app.get('/logout', function(req, res) {
 });
 
 
+var tweets = [];
+
+function splitTweets(tweet) {
+	
+	if (tweet.length == 0) return tweets;
+	
+	tweets.push(tweet.slice(0, 140));
+	
+	console.log(tweets.length);
+	
+	splitTweets(tweet.slice(140));
+}
+
 app.post('/preview', verifyCredentials, function(req, res) {
 
+	console.log('proceeding to preview');
 	
+	// Split tweet
+	
+	var data = req.body.tweet;
+	
+	console.log('tweet contains	: ' + numberOfCodepoints(data) + ' chars');
+	
+	var tweets = data.match(new RegExp('.{1,140}', 'g'));
+	
+	console.log('tweets split	: ' + tweets.length);
+	
+	res.render('preview', { username : req.session.screen_name, tweets : tweets });
 });
 
 
