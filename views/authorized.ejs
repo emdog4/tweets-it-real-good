@@ -1,0 +1,15 @@
+
+<% include ../views/public_header %>
+
+<h2>@<%= username %> tweets it real good [<a href="/logout">logout</a>]</h2>
+
+<form action="/preview" method="post">
+
+<textarea autocomplete="off" placeholder="What's Happening?" autofocus></textarea>
+
+<button type="submit">Preview</button>
+
+</form>
+
+
+<% include ../views/public_footer %>

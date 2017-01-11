@@ -8,7 +8,6 @@ var express = require('express');
 var session = require('express-session');
 var MongoDBStore = require('connect-mongodb-session')(session);
 
-
 var app = express();
 
 var store = new MongoDBStore({ uri: 'mongodb://localhost:27017/tirg', collection: 'sessions' });
@@ -47,9 +46,55 @@ var authenticateEndpoint = 'https://api.twitter.com/oauth/authenticate';
 var accessTokenEndpoint  = "https://api.twitter.com/oauth/access_token";
 
 // Twitter API endpoints
-var timelineUrl = 'https://api.twitter.com/1.1/statuses/user_timeline.json';
-var tweetUrl = 'https://api.twitter.com/1.1/statuses/update.json';
-var verifyCredentialsEndpoint ='https://api.twitter.com/1.1/account/verify_credentials.json';
+var timelineUrl 				= 'https://api.twitter.com/1.1/statuses/user_timeline.json';
+var tweetUrl 					= 'https://api.twitter.com/1.1/statuses/update.json';
+var verifyCredentialsEndpoint 	= 'https://api.twitter.com/1.1/account/verify_credentials.json';
+
+function verifyCredentials(req, res, next) {
+	
+	// Do we already have a browser session?
+	
+	if (typeof(req.session.oauth_token) == "undefined" || typeof(req.session.oauth_token_secret) == "undefined") {
+
+		console.log('no session detected');
+		
+		res.redirect('/login');
+	} 
+	
+	console.log('session detected');
+	
+	// Oauth data struct
+	
+	var dict = {
+		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
+		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
+		token 			: req.session.oauth_token,
+		token_secret 	: req.session.oauth_token_secret
+	}
+			 
+	console.log('verifying session');
+	
+	// Let's verify the session credentials
+	
+	request.get({ url : verifyCredentialsEndpoint, oauth : dict }, function(error, response, body) {
+	
+		console.log('response status code: ' + response.statusCode);
+
+		if (error) console.error(error);
+		
+		switch (response.statusCode) {
+			case 200:
+				console.log('credentials verified!');
+				next(); break;
+			case 401:
+			default:
+				console.error('invalid credentials');
+				res.redirect('/logout');
+		}
+	});
+	
+}
+
 
 var request = require('request'); 
 const querystring = require('querystring');
@@ -59,102 +104,65 @@ var OAuth = require('oauth');
 var Twitter = require('twitter');
 
 
-app.get('/authorized', function(req, res) {
-
-	res.render('auth_home', { username : req.session.screen_name });
-});
-
 app.get('/logout', function(req, res) {
 
-	console.log('entering logout');
+	console.log('proceeding to logout');
 	
 	req.session.destroy(function(error) {
 		
-		if (error) { console.log(error); return; }
+		if (error) { console.error(error); return; }
 		
 		console.log('session destroyed');
 
-		res.redirect('/');
+		res.redirect('/login');
 	});
 });
 
 
-app.get('/', function(req, res) {
+app.post('/preview', verifyCredentials, function(req, res) {
+
 	
-	console.log('entering app get /');
+});
 
-	// Do we already have a browser session?
 
-	if (typeof(req.session.oauth_token) != "undefined" && typeof(req.session.oauth_token_secret) != "undefined") {
-
-		console.log('exisiting session detected');
-
-		// Let's verify the credentials
-			
-		var dict = {
-			consumer_key : process.env.TWITTER_CONSUMER_KEY,
-			consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
-			token : req.session.oauth_token,
-			token_secret : req.session.oauth_token_secret
-		}
-				
-		console.log('token: ' + dict.token + ' secret: ' + dict.token_secret);
-
-		request.get({ url : verifyCredentialsEndpoint, oauth : dict }, function(error, response, body) {
-		
-			console.log('response status code: ' + response.statusCode);
-
-			if (error) { console.log(error); return; }
-				
-			if (response.statusCode == 200) {
-				
-				console.log('credentials verified!');
-					
-				res.redirect('/authorized');
-			
-			} else if(response.statusCode == 401) {
-
-				console.log('invalid credentials');
-
-				res.redirect('/logout');
-
-			} else {
-
-				console.log('invalid response');
-
-				res.redirect('/logout');
-			}
-		});
-			
-	} else {
+app.get('/', verifyCredentials, function(req, res) {
 	
-		console.log('no session detected');
+	res.render('authorized', { username : req.session.screen_name });
+});
 
-		// Oauth Step 1: Request Token
 
-		var dict = {
-			consumer_key : process.env.TWITTER_CONSUMER_KEY,
-			consumer_secret : process.env.TWITTER_CONSUMER_SECRET
-		}
-		
-		request.post({ url : requestTokenEndpoint, oauth : dict }, function(error, response, body) {
+app.get('/login', function(req, res) {
+	
+	console.log('proceeding with sign in');
 
-			if (error) console.log(error);
+	// Oauth Step 1: Request Token
 
-			var data = querystring.parse(body);
-			
-			req.session.oauth_token = data.oauth_token;
-			req.session.oauth_token_secret = data.oauth_token_secret;
-		
-			console.log('request tokens obtained!');
-
-			var signInWithTwitterURL = authenticateEndpoint + '?' + querystring.stringify({ oauth_token : req.session.oauth_token });
-			
-			// Oauth Step 2: User clicks link to Authenticate --> Sign in with Twitter
-			
-			res.render('public_index', { url : signInWithTwitterURL });
-		});
+	var dict = {
+		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
+		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
+		oauth_callback 	: process.env.APP_SIWT_CALLBACK
 	}
+	
+	request.post({ url : requestTokenEndpoint, oauth : dict }, function(error, response, body) {
+
+		if (error) console.error(error);
+
+		var data = querystring.parse(body);
+		
+		console.log('oauth callback confirmed: ' + data.oauth_callback_confirmed);
+		
+		req.session.oauth_token 		= data.oauth_token;
+		req.session.oauth_token_secret 	= data.oauth_token_secret;
+	
+		console.log('request tokens obtained!');
+
+		var signInWithTwitterURL = authenticateEndpoint + '?' + querystring.stringify({ oauth_token : req.session.oauth_token });
+		
+		// Oauth Step 2: User clicks link to Authenticate --> Sign in with Twitter
+		
+		res.render('index', { url : signInWithTwitterURL });
+	});
+	
 });
 
 
@@ -167,28 +175,28 @@ app.get('/signin-with-twitter', function(req, res) {
 	console.log('verifier obtained!');
 	
 	var dict = {
-		consumer_key : process.env.TWITTER_CONSUMER_KEY,
+		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
 		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
-		token : req.session.oauth_token,
-		token_secret : req.session.oauth_token_secret,
-		verifier : req.session.oauth_verifier
+		token 			: req.session.oauth_token,
+		token_secret 	: req.session.oauth_token_secret,
+		verifier 		: req.session.oauth_verifier
 	}
 	
 	// OAuth Step 3: Access Token
 	
 	request.post({ url : accessTokenEndpoint , oauth : dict }, function(error, response, body) {
 		
-		if (error) console.log(error);
+		if (error) console.error(error);
 		
 		var data = querystring.parse(body);
 		
-		req.session.oauth_token = data.oauth_token;
-		req.session.oauth_token_secret = data.oauth_token_secret;
-		req.session.screen_name = data.screen_name;
+		req.session.oauth_token 		= data.oauth_token;
+		req.session.oauth_token_secret 	= data.oauth_token_secret;
+		req.session.screen_name 		= data.screen_name;
 
 		console.log('access token obtained!');
 
-		res.redirect('/authorized');
+		res.redirect('/');
 	});
 });
 

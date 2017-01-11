@@ -9,6 +9,7 @@ mongod
 
 create .env file in project root with the following
 APP_COOKIE_SECRET=
+APP_SIWT_CALLBACK=
 TWITTER_CONSUMER_KEY=
 TWITTER_CONSUMER_SECRET=
 
