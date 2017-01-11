@@ -10,24 +10,23 @@ var MongoDBStore = require('connect-mongodb-session')(session);
 
 var app = express();
 
+app.use(require('helmet')());
+
 var store = new MongoDBStore({ uri: 'mongodb://localhost:27017/tirg', collection: 'sessions' });
 
-//Catch errors 
 store.on('error', function(error) {
 	if (error) console.log(error);
 	assert.ifError(error);
 	assert.ok(false);
 });
 
-app.use(require('express-session')({
-    secret: process.env.APP_COOKIE_SECRET,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 14 // 2 weeks
-    },
-    store: store,
-    resave: false,
-    saveUninitialized: false
-  }));
+app.use(session({
+    secret	: process.env.APP_COOKIE_SECRET,
+    cookie	: { maxAge: 1000 * 60 * 60 * 24 * 14 }, // 2 weeks
+    store	: store,
+    resave	: false,
+    saveUninitialized	: false
+ }));
 
 //parser application/x-www-form-urlencoded and application/json
 app.use(require('body-parser').urlencoded({ extended: true }));
@@ -49,6 +48,12 @@ var accessTokenEndpoint  = "https://api.twitter.com/oauth/access_token";
 var timelineUrl 				= 'https://api.twitter.com/1.1/statuses/user_timeline.json';
 var tweetUrl 					= 'https://api.twitter.com/1.1/statuses/update.json';
 var verifyCredentialsEndpoint 	= 'https://api.twitter.com/1.1/account/verify_credentials.json';
+
+var request = require('request'); 
+const querystring = require('querystring');
+
+var OAuth = require('oauth');
+
 
 function verifyCredentials(req, res, next) {
 	
@@ -92,16 +97,16 @@ function verifyCredentials(req, res, next) {
 				res.redirect('/logout');
 		}
 	});
-	
 }
 
 
-var request = require('request'); 
-const querystring = require('querystring');
-
-var OAuth = require('oauth');
-
 var Twitter = require('twitter');
+
+
+app.get('/', verifyCredentials, function(req, res) {
+	
+	res.render('authorized', { username : req.session.screen_name });
+});
 
 
 app.get('/logout', function(req, res) {
@@ -122,12 +127,6 @@ app.get('/logout', function(req, res) {
 app.post('/preview', verifyCredentials, function(req, res) {
 
 	
-});
-
-
-app.get('/', verifyCredentials, function(req, res) {
-	
-	res.render('authorized', { username : req.session.screen_name });
 });
 
 
