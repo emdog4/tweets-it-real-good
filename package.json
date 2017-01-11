@@ -1,0 +1,25 @@
+{
+  "name": "tweets-it-real-good",
+  "version": "1.0.0",
+  "description": "none",
+  "main": "bin/www",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "connect-mongodb-session": "^1.3.0",
+    "dotenv": "^4.0.0",
+    "ejs": "^2.5.5",
+    "express": "^4.14.0",
+    "express-session": "^1.14.2",
+    "morgan": "^1.7.0",
+    "oauth": "^0.9.15",
+    "path": "^0.12.7",
+    "request": "^2.79.0",
+    "twitter": "^1.7.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "emdog4",
+  "license": "ISC"
+}
