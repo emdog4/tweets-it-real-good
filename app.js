@@ -59,11 +59,15 @@ const querystring = require('querystring');
 var OAuth = require('oauth');
 
 
+
+
+
 function verifyCredentials(req, res, next) {
 	
 	// Do we already have a browser session?
 	
-	if (typeof(req.session.oauth_token) == "undefined" || typeof(req.session.oauth_token_secret) == "undefined") {
+	if (typeof(req.session.oauth_token) == "undefined" || typeof(req.session.oauth_token_secret) == "undefined") 
+	{
 
 		console.log('no session detected');
 		
@@ -72,7 +76,8 @@ function verifyCredentials(req, res, next) {
 	
 	// oauth http headers struct
 	
-	var dict = {
+	var dict = 
+	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
 		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
 		token 			: req.session.oauth_token,
@@ -81,46 +86,42 @@ function verifyCredentials(req, res, next) {
 			 	
 	// Let's verify the session credentials
 	
-	request.get({ url : verifyCredentialsEndpoint, oauth : dict }, function(error, response, body) {
-	
-		if (error) console.error(error);
-		
-		switch (response.statusCode) {
-			case 200:
-				console.log('session verified');
-				next(); break;
-			case 401:
-			default:
-				console.error('invalid credentials');
-				res.redirect('/logout');
+	request.get({ url : verifyCredentialsEndpoint, oauth : dict }, function(error, response, body) 
+	{
+		if (error) 
+		{
+			console.error(error); return;
+		} else {
+			
+			switch (response.statusCode) 
+			{
+				case 200:
+					next(); break;
+				case 401:
+				default:
+					console.error('invalid credentials');
+					res.redirect('/logout');
+			}
 		}
+		
 	});
 }
 
 
-function numberOfCodepoints(normalized) {
-	
-	if (typeof(normalized) == "undefined") return 0;
-	
-	if (normalized.length == 0) return 0;
-	
-	return punycode.ucs2.decode(normalized).length;
-}
-
-
-function grabCodePoints(preview, chunksize) {
+function grabCodePoints(preview, chunksize) 
+{
 	
 	var tweets = [];
 	
-	while (preview.length > 0) {
-	
+	while (preview.length > 0) 
+	{
 		if (preview.length < chunksize) chunksize = preview.length;
 		
 		var tweet = "";
 		var index = 0;
 		
-		while (index < chunksize) {
-		
+		while (index < chunksize) 
+		{
 			var char = String.fromCodePoint(preview.codePointAt(index));
 			
 			tweet += char;
@@ -137,10 +138,14 @@ function grabCodePoints(preview, chunksize) {
 }
 
 
-app.post('/preview', verifyCredentials, function(req, res) {
+//Routes // Routes // Routes // Routes // Routes
+//Routes // Routes // Routes // Routes // Routes
+//Routes // Routes // Routes // Routes // Routes
+//Routes // Routes // Routes // Routes // Routes
 
-	console.log('proceeding to preview');
 
+app.post('/preview', verifyCredentials, function(req, res) 
+{
 	req.session.tweet	= req.body.tweet.trim();
 	req.session.tweets 	= grabCodePoints(req.body.tweet.normalize('NFC'), 140);
 	
@@ -148,32 +153,18 @@ app.post('/preview', verifyCredentials, function(req, res) {
 });
 
 
-app.get('/reset', function(req, res) {
-	
+app.get('/reset', function(req, res) 
+{
 	req.session.tweet	= '';
 	req.session.tweets 	= '';
 	
 	res.redirect('/');
 });
 
-app.get('/', verifyCredentials, function(req, res) {
-	
+
+app.get('/', verifyCredentials, function(req, res) 
+{
 	res.render('authorized', { username : req.session.screen_name, tweet : req.session.tweet, tweets : req.session.tweets });
-});
-
-
-app.get('/logout', function(req, res) {
-
-	console.log('proceeding to logout');
-	
-	req.session.destroy(function(error) {
-		
-		if (error) console.error(error);
-		
-		console.log('session destroyed');
-
-		res.redirect('/login');
-	});
 });
 
 
@@ -183,30 +174,49 @@ app.get('/login', function(req, res) {
 
 	// Oauth Step 1: Request Token
 
-	var dict = {
+	var dict = 
+	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
 		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
 		oauth_callback 	: process.env.APP_SIWT_CALLBACK
 	}
 	
-	request.post({ url : requestTokenEndpoint, oauth : dict }, function(error, response, body) {
+	request.post({ url : requestTokenEndpoint, oauth : dict }, function(error, response, body) 
+	{
+		if (error) 
+		{
+			console.error(error); return;
+		} else {
 
-		if (error) console.error(error);
-
-		var data = querystring.parse(body);
+			var data = querystring.parse(body);
+						
+			req.session.oauth_token 		= data.oauth_token;
+			req.session.oauth_token_secret 	= data.oauth_token_secret;
 		
-		//console.log('oauth callback confirmed: ' + data.oauth_callback_confirmed);
-		
-		req.session.oauth_token 		= data.oauth_token;
-		req.session.oauth_token_secret 	= data.oauth_token_secret;
-	
-		var signInWithTwitterURL = authenticateEndpoint + '?' + querystring.stringify({ oauth_token : req.session.oauth_token });
-		
-		// Oauth Step 2: User clicks link to Authenticate --> Sign in with Twitter
-		
-		res.render('index', { url : signInWithTwitterURL });
+			var signInWithTwitterURL = authenticateEndpoint + '?' + querystring.stringify({ oauth_token : req.session.oauth_token });
+			
+			// Oauth Step 2: User clicks link to Authenticate --> Sign in with Twitter
+			
+			res.render('index', { url : signInWithTwitterURL });
+		}
 	});
-	
+});
+
+
+app.get('/logout', function(req, res) 
+{	
+	req.session.destroy(function(error) 
+	{
+		if (error) 
+		{
+			console.error(error); return;
+		} else {
+			
+			console.log('session destroyed');
+		}
+		
+		res.redirect('/login');
+	});
 });
 
 
@@ -226,19 +236,23 @@ app.get('/signin-with-twitter', function(req, res) {
 	
 	// OAuth Step 3: Access Token
 	
-	request.post({ url : accessTokenEndpoint , oauth : dict }, function(error, response, body) {
-		
-		if (error) console.error(error);
-		
-		var data = querystring.parse(body);
-		
-		req.session.oauth_token 		= data.oauth_token;
-		req.session.oauth_token_secret 	= data.oauth_token_secret;
-		req.session.screen_name 		= data.screen_name;
-
-		console.log('access token obtained!');
-
-		res.redirect('/');
+	request.post({ url : accessTokenEndpoint , oauth : dict }, function(error, response, body) 
+	{
+		if (error) 
+		{
+			console.error(error); return;
+		} else {
+			
+			var data = querystring.parse(body);
+			
+			req.session.oauth_token 		= data.oauth_token;
+			req.session.oauth_token_secret 	= data.oauth_token_secret;
+			req.session.screen_name 		= data.screen_name;
+	
+			console.log('access token obtained!');
+	
+			res.redirect('/');
+		}
 	});
 });
 
