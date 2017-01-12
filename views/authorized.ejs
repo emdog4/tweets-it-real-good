@@ -1,15 +1,26 @@
 
 <% include ../views/public_header %>
 
-<h2>@<%= username %> tweets it real good [<a href="/logout">logout</a>]</h2>
-
 <form action="/preview" method="post">
 
-<textarea name="tweet" autocomplete="off" placeholder="What's Happening?" autofocus></textarea>
-
-<button type="submit">Preview</button>
+	<textarea name="tweet" autocomplete="off" placeholder="What's Happening?" rows="10" cols="50"><% if (locals.tweet) { %><%= tweet %><% } %></textarea>
+	
+	<button type="submit">Preview</button> <button type="reset" onclick="location.href='/reset'">Reset</button>
 
 </form>
 
+<% if (locals.tweets) { %>
+
+	<ul>
+	
+		<% tweets.forEach(function(tweet) { %>
+			
+		<li style="list-style-type: none;"><%= tweet %></li>
+		
+		<% }) %>
+	
+	</ul>
+
+<% } %>
 
 <% include ../views/public_footer %>

@@ -70,9 +70,7 @@ function verifyCredentials(req, res, next) {
 		res.redirect('/login');
 	} 
 	
-	console.log('session detected');
-	
-	// Oauth data struct
+	// oauth http headers struct
 	
 	var dict = {
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
@@ -89,7 +87,7 @@ function verifyCredentials(req, res, next) {
 		
 		switch (response.statusCode) {
 			case 200:
-				console.log('credentials verified');
+				console.log('session verified');
 				next(); break;
 			case 401:
 			default:
@@ -129,9 +127,7 @@ function grabCodePoints(preview, chunksize) {
 									
 			index += char.length;
 		}
-	
-		console.log(tweet);
-		
+			
 		tweets.push(tweet);
 	
 		preview = preview.slice(chunksize);
@@ -144,20 +140,25 @@ function grabCodePoints(preview, chunksize) {
 app.post('/preview', verifyCredentials, function(req, res) {
 
 	console.log('proceeding to preview');
-		
-	var normalized = req.body.tweet.normalize('NFC');
+
+	req.session.tweet	= req.body.tweet.trim();
+	req.session.tweets 	= grabCodePoints(req.body.tweet.normalize('NFC'), 140);
 	
-	console.log(normalized);
-	
-	var tweets = grabCodePoints(normalized, 140);
-	
-	res.render('preview', { username : req.session.screen_name, tweets : tweets });
+	res.redirect('/');
 });
 
 
+app.get('/reset', function(req, res) {
+	
+	req.session.tweet	= '';
+	req.session.tweets 	= '';
+	
+	res.redirect('/');
+});
+
 app.get('/', verifyCredentials, function(req, res) {
 	
-	res.render('authorized', { username : req.session.screen_name });
+	res.render('authorized', { username : req.session.screen_name, tweet : req.session.tweet, tweets : req.session.tweets });
 });
 
 
