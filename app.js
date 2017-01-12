@@ -80,20 +80,16 @@ function verifyCredentials(req, res, next) {
 		token 			: req.session.oauth_token,
 		token_secret 	: req.session.oauth_token_secret
 	}
-			 
-	console.log('verifying session');
-	
+			 	
 	// Let's verify the session credentials
 	
 	request.get({ url : verifyCredentialsEndpoint, oauth : dict }, function(error, response, body) {
 	
-		console.log('response status code: ' + response.statusCode);
-
 		if (error) console.error(error);
 		
 		switch (response.statusCode) {
 			case 200:
-				console.log('credentials verified!');
+				console.log('credentials verified');
 				next(); break;
 			case 401:
 			default:
@@ -104,19 +100,59 @@ function verifyCredentials(req, res, next) {
 }
 
 
-function numberOfCodepoints(string) {
+function numberOfCodepoints(normalized) {
 	
-	if (typeof(string) == "undefined") return 0;
+	if (typeof(normalized) == "undefined") return 0;
 	
-	if (string.length == 0) return 0;
-	
-	var normalized = string.normalize('NFC');
+	if (normalized.length == 0) return 0;
 	
 	return punycode.ucs2.decode(normalized).length;
 }
 
 
+function grabCodePoints(preview, chunksize) {
+	
+	var tweets = [];
+	
+	while (preview.length > 0) {
+	
+		if (preview.length < chunksize) chunksize = preview.length;
+		
+		var tweet = "";
+		var index = 0;
+		
+		while (index < chunksize) {
+		
+			var char = String.fromCodePoint(preview.codePointAt(index));
+			
+			tweet += char;
+									
+			index += char.length;
+		}
+	
+		console.log(tweet);
+		
+		tweets.push(tweet);
+	
+		preview = preview.slice(chunksize);
+	}
+	
+	return tweets;
+}
 
+
+app.post('/preview', verifyCredentials, function(req, res) {
+
+	console.log('proceeding to preview');
+		
+	var normalized = req.body.tweet.normalize('NFC');
+	
+	console.log(normalized);
+	
+	var tweets = grabCodePoints(normalized, 140);
+	
+	res.render('preview', { username : req.session.screen_name, tweets : tweets });
+});
 
 
 app.get('/', verifyCredentials, function(req, res) {
@@ -140,37 +176,6 @@ app.get('/logout', function(req, res) {
 });
 
 
-var tweets = [];
-
-function splitTweets(tweet) {
-	
-	if (tweet.length == 0) return tweets;
-	
-	tweets.push(tweet.slice(0, 140));
-	
-	console.log(tweets.length);
-	
-	splitTweets(tweet.slice(140));
-}
-
-app.post('/preview', verifyCredentials, function(req, res) {
-
-	console.log('proceeding to preview');
-	
-	// Split tweet
-	
-	var data = req.body.tweet;
-	
-	console.log('tweet contains	: ' + numberOfCodepoints(data) + ' chars');
-	
-	var tweets = data.match(new RegExp('.{1,140}', 'g'));
-	
-	console.log('tweets split	: ' + tweets.length);
-	
-	res.render('preview', { username : req.session.screen_name, tweets : tweets });
-});
-
-
 app.get('/login', function(req, res) {
 	
 	console.log('proceeding with sign in');
@@ -189,13 +194,11 @@ app.get('/login', function(req, res) {
 
 		var data = querystring.parse(body);
 		
-		console.log('oauth callback confirmed: ' + data.oauth_callback_confirmed);
+		//console.log('oauth callback confirmed: ' + data.oauth_callback_confirmed);
 		
 		req.session.oauth_token 		= data.oauth_token;
 		req.session.oauth_token_secret 	= data.oauth_token_secret;
 	
-		console.log('request tokens obtained!');
-
 		var signInWithTwitterURL = authenticateEndpoint + '?' + querystring.stringify({ oauth_token : req.session.oauth_token });
 		
 		// Oauth Step 2: User clicks link to Authenticate --> Sign in with Twitter
@@ -211,8 +214,6 @@ app.get('/signin-with-twitter', function(req, res) {
 	// Sign in with Twitter callback
 	
 	req.session.oauth_verifier = req.query.oauth_verifier;
-
-	console.log('verifier obtained!');
 	
 	var dict = {
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
