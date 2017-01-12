@@ -1,5 +1,5 @@
 /**
- * Tweets it real good twitter: emdog4 2017 license: public domain
+* Tweets it real good twitter: emdog4 2017 license: public domain
  */
 
 require('dotenv').load();
