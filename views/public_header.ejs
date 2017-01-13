@@ -7,23 +7,47 @@
     <meta name="description" content="tweets it real good">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     
+    <script src="https://use.typekit.net/skz6zbr.js"></script>
+    <script>try{Typekit.load({ async: true });}catch(e){}</script>
+    
     <style>
     	a {
-    		
+    		text-decoration: none;
+    		color: black;
     	}
-	    ul {
-	    	-webkit-padding-start:0px;
+	    h2 {
+	    	font-family: "shuriken-std",fantasy;
 	    }
-	
-	    li {
-	    	list-style-type: none; 
-	    	padding-top: 40px;
+	    h2, h4 {
+	    	text-align: center;
 	    }
-	    h2, h4, ul {
+	    h2, h4, textarea {
 	    	margin: 0 auto;
+	    	margin-top: 10px;
+	    }
+	    textarea {
+	    	display: block;
 	    	width: 50%;
+	    	font-size: 130%;
+	    	padding: 10px;
+	    	overflow: hidden;
+	    	resize: none;
+	    	min-height: 60px;
+	    }
+	    button {
+	    	padding: 10px;
+	    }
+	    #buttons {
+	    	text-align: center;
+	    	margin-top: 10px;
 	    }
     </style>
+    <script>
+    function resize (element) {
+    	element.style.height = 'auto';
+    	element.style.height = element.scrollHeight + 'px';
+    }
+    </script>
 </head>
 <body>
 
@@ -34,7 +58,7 @@
 
 <% if (locals.username) { %>
 
-<h2>[<a href="/">______tIrg______</a>]</h2>
-<h4>[<a href="/timeline">@<%= username %></a>][<a href="/logout">出口</a>]</h4>
+<h2><a href="/">______TiRG______</a></h2>
+<h4><a href="/timeline"><%= username %></a> tweets it real good. [<a href="/logout">logout</a>]</h4>
 <% } %>
 

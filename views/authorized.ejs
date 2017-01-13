@@ -1,26 +1,30 @@
 
 <% include ../views/public_header %>
 
-<form action="/preview" method="post">
-
-	<textarea name="tweet" autocomplete="off" placeholder="What's Happening?" rows="10" cols="50"><% if (locals.tweet) { %><%= tweet %><% } %></textarea>
+<form id="single" action="/preview" method="post">
 	
-	<button type="submit">Preview</button> <button type="reset" onclick="location.href='/reset'">Reset</button>
-
+	<textarea name="tweet" placeholder="What's Happening?" onload="resize(this);" onkeyup="resize(this);"><% if (locals.tweet) { %><%= tweet %><% } %></textarea>
+	
 </form>
+
+<div id="buttons">
+	<button type="submit" form="single">Preview</button>
+	<button type="reset" onclick="location.href='/reset'">Reset</button>
+	<button type="submit" form="splits">Tweet</button>
+</div>
 
 <% if (locals.tweets) { %>
 
-	<ul>
+<form id="splits">
 	
-		<% tweets.forEach(function(tweet) { %>
-			
-			<li><%= tweet %></li>
-		
-		<% }) %>
+	<% tweets.forEach(function(tweet) { %>
 	
-	</ul>
+		<textarea disabled><%= tweet %></textarea>
+	
+	<% }) %>
 
+</form>	
+	
 <% } %>
 
 <% include ../views/public_footer %>
