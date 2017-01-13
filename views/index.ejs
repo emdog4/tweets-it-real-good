@@ -1,40 +1,7 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>======TiRG=======</title>
-    <meta name="description" content="tweets it real good">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-        
-    <script src="https://use.typekit.net/skz6zbr.js"></script>
-    <script>try{Typekit.load({ async: true });}catch(e){}</script>
-    
-    <style>
-    	a {
-    		text-decoration: none;
-    		color: black;
-    	}
-    	h2 {
-	    	font-family: "shuriken-std",fantasy;
-    	}
-	    h2, p {
-	    	text-align: center;
-	    	margin: 0 auto;
-    		margin-top: 10px;
-	    }
+<% include ../views/header %>
 
-    </style>
-</head>
-<body>
+<p><a href="<%= url %>"><img id="login" src="images/login.png" /></a></p>
 
-<!--[if lt IE 8]>
-<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-<![endif]-->
-
-<h2><a href="/">______TiRG______</a></h2>
-
-<p><a href="<%= url %>"><img src="images/sign-in-with-twitter-gray.png" /></a></p>
 <p>You authentication token is: <%= token %></p>
 
 </body>

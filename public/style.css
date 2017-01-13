@@ -1,0 +1,39 @@
+body {
+	background-color: #333;
+}
+a, p {
+	color: #ccc;
+	text-align: center;
+}
+
+img, p, textarea {
+	margin: 0 auto;
+	margin-top: 10px;
+	display: block;
+}
+
+textarea {
+	width: 60%;
+	font-size: 130%;
+	padding: 10px;
+	overflow: hidden;
+	resize: none;
+	background-color: #fff;
+}
+
+button {
+	padding: 10px;
+}
+
+#buttons {
+	text-align: center;
+	margin-top: 10px;
+}
+
+img {
+	width: 60%;
+}
+
+#login {
+	width: 200px;
+}
