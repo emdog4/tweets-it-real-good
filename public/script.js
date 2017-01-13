@@ -1,8 +1,8 @@
 
-$(document).ready(function() {
-    console.log('ready!');
-    
-    $('#input textarea').on('keydown focus', function() {
+$(document).ready(function() 
+{
+    $('#input textarea').on('keydown focus', function() 
+    {
     	autosize(this);
     	
     	var preview = $('#tweets');
@@ -11,19 +11,22 @@ $(document).ready(function() {
     	
     	var tweets = $(this).val().match(re);
     	
-    	if (tweets) {
-	    	tweets.forEach(function(item) {
+    	if (tweets) 
+    	{
+	    	tweets.forEach(function(item) 
+	    	{
 	    		$(preview).append('<div class="tweet">' + item + '</div>');
 	    	});
     	}
-    	
     });
     
-    $('#input').on('reset', function() {
+    $('#input').on('reset', function() 
+    {
     	var ta = $(this).find('textarea')[0];
+    
     	$(ta).text('').focus();
+    	
     	autosize.update(ta);
     });
-    
-    
+	    
 });

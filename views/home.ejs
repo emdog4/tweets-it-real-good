@@ -1,10 +1,11 @@
+
 <% include ../views/header %>
 
 <% if (locals.username) { %>
-	<p><a href="/timeline" alt="Timeline"><%= username %></a> tweets it real good. [<a href="/logout" alt="Logout">logout</a>]</p>
+	<p><a href="/timeline" alt="Timeline"><%= username %></a> <a href="/timeline" alt="Timeline">tweets</a> it real good. [<a href="/logout" alt="Logout">logout</a>]</p>
 <% } %>
 
-<form id="input" action="/preview" method="post">
+<form id="input" action="/update" method="post">
 	
 	<textarea name="tweet" placeholder="What's Happening?"><% if (locals.tweet) { %><%= tweet %><% } %></textarea>
 	

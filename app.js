@@ -20,13 +20,7 @@ store.on('error', function(error) {
 	assert.ok(false);
 });
 
-app.use(session({
-    secret	: process.env.APP_COOKIE_SECRET,
-    cookie	: { maxAge: 1000 * 60 * 60 * 24 * 14 }, // 2 weeks
-    store	: store,
-    resave	: false,
-    saveUninitialized	: false
- }));
+app.use(session( { secret : process.env.APP_COOKIE_SECRET, cookie : { maxAge: 1000 * 60 * 60 * 24 * 14 }, store : store, resave : false, saveUninitialized : false } ));
 
 //parser application/x-www-form-urlencoded and application/json
 app.use(require('body-parser').urlencoded({ extended: true }));
@@ -58,24 +52,13 @@ const querystring = require('querystring');
 
 var OAuth = require('oauth');
 
-
-
-
-
-function verifyCredentials(req, res, next) {
-	
-	// Do we already have a browser session?
-	
+function verifyCredentials(req, res, next) 
+{
 	if (typeof(req.session.oauth_token) == "undefined" || typeof(req.session.oauth_token_secret) == "undefined") 
 	{
-
-		console.log('no session detected');
-		
 		res.redirect('/login');
 	} 
-	
-	// oauth http headers struct
-	
+		
 	var dict = 
 	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
@@ -83,24 +66,22 @@ function verifyCredentials(req, res, next) {
 		token 			: req.session.oauth_token,
 		token_secret 	: req.session.oauth_token_secret
 	}
-			 	
-	// Let's verify the session credentials
 	
 	request.get({ url : verifyCredentialsEndpoint, oauth : dict }, function(error, response, body) 
 	{
 		if (error) 
 		{
 			console.error(error); return;
-		} else {
-			
+		} 
+		else 
+		{
 			switch (response.statusCode) 
 			{
 				case 200:
 					next(); break;
 				case 401:
 				default:
-					console.error('invalid credentials');
-					res.redirect('/logout');
+					console.error('invalid credentials'); res.redirect('/logout');
 			}
 		}
 		
@@ -108,72 +89,20 @@ function verifyCredentials(req, res, next) {
 }
 
 
-function grabCodePoints(preview, chunksize) 
-{
-	
-	var tweets = [];
-	
-	while (preview.length > 0) 
-	{
-		if (preview.length < chunksize) chunksize = preview.length;
-		
-		var tweet = "";
-		var index = 0;
-		
-		while (index < chunksize) 
-		{
-			var char = String.fromCodePoint(preview.codePointAt(index));
-			
-			tweet += char;
-									
-			index += char.length;
-		}
-			
-		tweets.push(tweet);
-	
-		preview = preview.slice(chunksize);
-	}
-	
-	return tweets;
-}
-
-
 //Routes // Routes // Routes // Routes // Routes
 //Routes // Routes // Routes // Routes // Routes
 //Routes // Routes // Routes // Routes // Routes
 //Routes // Routes // Routes // Routes // Routes
-
-
-app.post('/preview', verifyCredentials, function(req, res) 
-{
-	req.session.tweet	= req.body.tweet.trim();
-	req.session.tweets 	= grabCodePoints(req.body.tweet.normalize('NFC'), 140);
-	
-	res.redirect('/');
-});
-
-
-app.get('/reset', function(req, res) 
-{
-	req.session.tweet	= '';
-	req.session.tweets 	= '';
-	
-	res.redirect('/');
-});
 
 
 app.get('/', verifyCredentials, function(req, res) 
 {
-	res.render('authorized', { username : req.session.screen_name, tweet : req.session.tweet, tweets : req.session.tweets });
+	res.render('authorized', { username : req.session.screen_name, home_timeline : req.session.home_timeline });
 });
 
 
-app.get('/login', function(req, res) {
-	
-	console.log('proceeding with sign in');
-
-	// Oauth Step 1: Request Token
-
+app.get('/login', function(req, res) 
+{
 	var dict = 
 	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
@@ -186,49 +115,28 @@ app.get('/login', function(req, res) {
 		if (error) 
 		{
 			console.error(error); return;
-		} else {
-
+		} 
+		else 
+		{
 			var data = querystring.parse(body);
 						
 			req.session.oauth_token 		= data.oauth_token;
 			req.session.oauth_token_secret 	= data.oauth_token_secret;
 		
 			var signInWithTwitterURL = authenticateEndpoint + '?' + querystring.stringify({ oauth_token : req.session.oauth_token });
-			
-			// Oauth Step 2: User clicks link to Authenticate --> Sign in with Twitter
-			
+						
 			res.render('index', { url : signInWithTwitterURL, token : req.session.oauth_token });
 		}
 	});
 });
 
 
-app.get('/logout', function(req, res) 
-{	
-	console.log('logout');
-	
-	req.session.destroy(function(error) 
-	{
-		if (error) 
-		{
-			console.error(error); return;
-		} else {
-			
-			console.log('session destroyed');
-		}
-		
-		res.redirect('/login');
-	});
-});
-
-
-app.get('/signin-with-twitter', function(req, res) {
-	
-	// Sign in with Twitter callback
-	
+app.get('/signin-with-twitter', function(req, res) 
+{
 	req.session.oauth_verifier = req.query.oauth_verifier;
 	
-	var dict = {
+	var dict = 
+	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
 		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
 		token 			: req.session.oauth_token,
@@ -236,28 +144,73 @@ app.get('/signin-with-twitter', function(req, res) {
 		verifier 		: req.session.oauth_verifier
 	}
 	
-	// OAuth Step 3: Access Token
-	
 	request.post({ url : accessTokenEndpoint , oauth : dict }, function(error, response, body) 
 	{
 		if (error) 
 		{
 			console.error(error); return;
-		} else {
-			
+		} 
+		else 
+		{
 			var data = querystring.parse(body);
 			
 			req.session.oauth_token 		= data.oauth_token;
 			req.session.oauth_token_secret 	= data.oauth_token_secret;
 			req.session.screen_name 		= data.screen_name;
 	
-			console.log('access token obtained!');
-	
 			res.redirect('/');
 		}
 	});
 });
 
+
+app.get('/logout', function(req, res) 
+{	
+	req.session.destroy(function(error) 
+	{
+		if (error) 
+		{
+			console.error(error); return;
+		} 
+		else 
+		{
+			res.redirect('/login');
+		}
+	});
+});
+
+
+
+var twitter = new Twitter({ consumer_key: process.env.TWITTER_CONSUMER_KEY,	consumer_secret: process.env.TWITTER_CONSUMER_SECRET, access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY, access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET });
+
+
+app.post('/update', function(req, res) 
+{
+	twitter.post('statuses/update', { status: req.body.tweet },  function(error, tweet, response) 
+	{
+		if (error) throw error;
+		
+		console.log(tweet); 
+		console.log(response);
+		
+		res.redirect('/');
+	});
+});
+
+
+
+app.get('/timeline', function(req, res) 
+{	
+	twitter.get('statuses/home_timeline', function(error, tweets, response) 
+	{
+		if(error) throw error;
+		
+		console.log(tweets);  
+		console.log(response); 
+		
+		res.redirect('/');
+	});
+});
 
 app.use('/', express.static(path.join(__dirname, 'public')));
 
