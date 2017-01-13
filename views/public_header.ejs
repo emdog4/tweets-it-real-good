@@ -9,7 +9,7 @@
     
     <script src="https://use.typekit.net/skz6zbr.js"></script>
     <script>try{Typekit.load({ async: true });}catch(e){}</script>
-    
+        
     <style>
     	a {
     		text-decoration: none;
@@ -31,8 +31,8 @@
 	    	font-size: 130%;
 	    	padding: 10px;
 	    	overflow: hidden;
+	    	min-height: 45px;
 	    	resize: none;
-	    	min-height: 60px;
 	    }
 	    button {
 	    	padding: 10px;
@@ -43,10 +43,13 @@
 	    }
     </style>
     <script>
-    function resize (element) {
-    	element.style.height = 'auto';
-    	element.style.height = element.scrollHeight + 'px';
-    }
+	    var te = document.querySelector('textarea');
+	    te.addEventListener('keydown', resizeTextarea);
+	
+	    function resizeTextarea(ev) {
+	        this.style.height = '45px';
+	        this.style.height = this.scrollHeight + 12 + 'px';
+	    }
     </script>
 </head>
 <body>

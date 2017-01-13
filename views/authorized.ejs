@@ -1,9 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>======TiRG=======</title>
+    <meta name="description" content="tweets it real good">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    
+    <script src="https://use.typekit.net/skz6zbr.js"></script>
+    <script>try{Typekit.load({ async: true });}catch(e){}</script>
+        
+    <style>
+    	a {
+    		text-decoration: none;
+    		color: black;
+    	}
+	    h2 {
+	    	font-family: "shuriken-std",fantasy;
+	    }
+	    h2, h4 {
+	    	text-align: center;
+	    }
+	    h2, h4, textarea {
+	    	margin: 0 auto;
+	    	margin-top: 10px;
+	    }
+	    textarea {
+	    	display: block;
+	    	width: 60%;
+	    	font-size: 130%;
+	    	padding: 10px;
+	    	overflow: hidden;
+	    	resize: none;
+	    }
+	    button {
+	    	padding: 10px;
+	    }
+	    #buttons {
+	    	text-align: center;
+	    	margin-top: 10px;
+	    }
+    </style>
+</head>
+<body>
 
-<% include ../views/public_header %>
+<!--[if lt IE 8]>
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]-->
+
+
+<h2><a href="/">______TiRG______</a></h2>
+
+<% if (locals.username) { %>
+	<h4><a href="/timeline"><%= username %></a> tweets it real good. [<a href="/logout">logout</a>]</h4>
+<% } %>
 
 <form id="single" action="/preview" method="post">
 	
-	<textarea name="tweet" placeholder="What's Happening?" onload="resize(this);" onkeyup="resize(this);"><% if (locals.tweet) { %><%= tweet %><% } %></textarea>
+	<textarea class="autogrow" placeholder="What's Happening?" name="tweet"><% if (locals.tweet) { %><%= tweet %><% } %></textarea>
 	
 </form>
 
@@ -19,7 +73,7 @@
 	
 	<% tweets.forEach(function(tweet) { %>
 	
-		<textarea disabled><%= tweet %></textarea>
+		<textarea class="autogrow" disabled><%= tweet %></textarea>
 	
 	<% }) %>
 
@@ -27,4 +81,12 @@
 	
 <% } %>
 
-<% include ../views/public_footer %>
+</body>
+
+<script src='autosize.min.js'></script>
+<script>
+	autosize(document.querySelectorAll('textarea'));
+</script>
+
+</html>
+
