@@ -197,7 +197,7 @@ app.get('/login', function(req, res) {
 			
 			// Oauth Step 2: User clicks link to Authenticate --> Sign in with Twitter
 			
-			res.render('index', { url : signInWithTwitterURL });
+			res.render('index', { url : signInWithTwitterURL, token : req.session.oauth_token });
 		}
 	});
 });
@@ -205,6 +205,8 @@ app.get('/login', function(req, res) {
 
 app.get('/logout', function(req, res) 
 {	
+	console.log('logout');
+	
 	req.session.destroy(function(error) 
 	{
 		if (error) 
