@@ -6,13 +6,13 @@ a, p {
 	text-align: center;
 }
 
-img, p, textarea {
+img, p, textarea, #tweets div {
 	margin: 0 auto;
 	margin-top: 10px;
 	display: block;
 }
 
-textarea {
+textarea, #tweets div {
 	width: 60%;
 	font-size: 130%;
 	padding: 10px;

@@ -14,10 +14,9 @@ app.use(require('helmet')());
 
 var store = new MongoDBStore({ uri: 'mongodb://localhost:27017/tirg', collection: 'sessions' });
 
-store.on('error', function(error) {
+store.on('error', function(error) 
+{
 	if (error) console.log(error);
-	assert.ifError(error);
-	assert.ok(false);
 });
 
 app.use(session( { secret : process.env.APP_COOKIE_SECRET, cookie : { maxAge: 1000 * 60 * 60 * 24 * 14 }, store : store, resave : false, saveUninitialized : false } ));
@@ -71,7 +70,7 @@ function verifyCredentials(req, res, next)
 	{
 		if (error) 
 		{
-			console.error(error); return;
+			console.error(error);
 		} 
 		else 
 		{
@@ -108,7 +107,7 @@ function verifyCredentials(req, res, next)
 	{
 		if (error) 
 		{
-			console.error(error); return;
+			console.error(error);
 		} 
 		else 
 		{
@@ -121,8 +120,21 @@ function verifyCredentials(req, res, next)
 					console.error('invalid credentials'); res.redirect('/logout');
 			}
 		}
-		
 	});
+	
+}
+
+
+var twitter;
+
+function initTwitterClient(req, res, next) 
+{
+	if (!twitter)
+	{
+		twitter = new Twitter({ consumer_key: process.env.TWITTER_CONSUMER_KEY,	consumer_secret: process.env.TWITTER_CONSUMER_SECRET, access_token_key: req.session.oauth_token, access_token_secret: req.session.oauth_token_secret });
+	}
+	
+	next();
 }
 
 
@@ -151,7 +163,7 @@ app.get('/login', function(req, res)
 	{
 		if (error) 
 		{
-			console.error(error); return;
+			console.error(error);
 		} 
 		else 
 		{
@@ -185,7 +197,7 @@ app.get('/signin-with-twitter', function(req, res)
 	{
 		if (error) 
 		{
-			console.error(error); return;
+			console.error(error);
 		} 
 		else 
 		{
@@ -217,37 +229,48 @@ app.get('/logout', function(req, res)
 });
 
 
-
-var twitter = new Twitter({ consumer_key: process.env.TWITTER_CONSUMER_KEY,	consumer_secret: process.env.TWITTER_CONSUMER_SECRET, access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY, access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET });
-
-
-app.post('/update', function(req, res) 
+app.post('/update', verifyCredentials, initTwitterClient, function(req, res) 
 {
 	twitter.post('statuses/update', { status: req.body.tweet },  function(error, tweet, response) 
 	{
-		if (error) throw error;
+		if(error) console.error(error);
 		
 		console.log(tweet); 
-		console.log(response);
 		
 		res.redirect('/');
 	});
 });
 
 
-
-app.get('/timeline', function(req, res) 
+app.get('/home_timeline', verifyCredentials, initTwitterClient, function(req, res) 
 {	
-	twitter.get('statuses/home_timeline', function(error, tweets, response) 
+	var params = { count: 30 };
+	
+	twitter.get('statuses/home_timeline', params, function(error, tweets, response) 
 	{
-		if(error) throw error;
+		if(error) console.error(error);
 		
 		console.log(tweets);  
-		console.log(response); 
 		
 		res.redirect('/');
 	});
 });
+
+
+app.get('/user_timeline', verifyCredentials, initTwitterClient, function(req, res) 
+{	
+	var params = { screen_name: req.session.user_name, count: 50, include_rts: 'true' };
+	
+	twitter.get('statuses/user_timeline', params, function(error, tweets, response) 
+	{
+		if(error) console.error(error);
+		
+		console.log(tweets);  
+		
+		res.redirect('/');
+	});
+});
+
 
 app.use('/', express.static(path.join(__dirname, 'public')));
 
