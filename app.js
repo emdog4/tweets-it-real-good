@@ -89,6 +89,43 @@ function verifyCredentials(req, res, next)
 }
 
 
+function verifyCredentials(req, res, next) 
+{
+	if (typeof(req.session.oauth_token) == "undefined" || typeof(req.session.oauth_token_secret) == "undefined") 
+	{
+		res.redirect('/login');
+	} 
+		
+	var dict = 
+	{
+		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
+		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
+		token 			: req.session.oauth_token,
+		token_secret 	: req.session.oauth_token_secret
+	}
+	
+	request.get({ url : verifyCredentialsEndpoint, oauth : dict }, function(error, response, body) 
+	{
+		if (error) 
+		{
+			console.error(error); return;
+		} 
+		else 
+		{
+			switch (response.statusCode) 
+			{
+				case 200:
+					next(); break;
+				case 401:
+				default:
+					console.error('invalid credentials'); res.redirect('/logout');
+			}
+		}
+		
+	});
+}
+
+
 //Routes // Routes // Routes // Routes // Routes
 //Routes // Routes // Routes // Routes // Routes
 //Routes // Routes // Routes // Routes // Routes
@@ -97,7 +134,7 @@ function verifyCredentials(req, res, next)
 
 app.get('/', verifyCredentials, function(req, res) 
 {
-	res.render('authorized', { username : req.session.screen_name, home_timeline : req.session.home_timeline });
+	res.render('home', { username : req.session.screen_name, home_timeline : req.session.home_timeline });
 });
 
 
