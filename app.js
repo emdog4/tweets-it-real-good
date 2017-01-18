@@ -230,15 +230,21 @@ app.get('/logout', function(req, res)
 
 
 app.post('/update', verifyCredentials, initTwitterClient, function(req, res) 
-{
-	twitter.post('statuses/update', { status: req.body.tweet },  function(error, tweet, response) 
-	{
-		if(error) console.error(error);
+{	
+	var tweets = req.body.tweets;
 		
-		console.log(tweet); 
+	tweets.forEach(function(tweet) 
+	{		
+		var params = { status: tweet };
 		
-		res.redirect('/');
+		twitter.post('statuses/update', params,  function(error, twt, response) 
+		{
+			if(error) console.error(error);
+			
+			console.log(twt); 
+		});
 	});
+	res.redirect('/');
 });
 
 
@@ -246,11 +252,11 @@ app.get('/home_timeline', verifyCredentials, initTwitterClient, function(req, re
 {	
 	var params = { count: 30 };
 	
-	twitter.get('statuses/home_timeline', params, function(error, tweets, response) 
+	twitter.get('statuses/home_timeline', params, function(error, twt, response) 
 	{
 		if(error) console.error(error);
 		
-		console.log(tweets);  
+		console.log(twt);  
 		
 		res.redirect('/');
 	});
@@ -261,11 +267,11 @@ app.get('/user_timeline', verifyCredentials, initTwitterClient, function(req, re
 {	
 	var params = { screen_name: req.session.user_name, count: 50, include_rts: 'true' };
 	
-	twitter.get('statuses/user_timeline', params, function(error, tweets, response) 
+	twitter.get('statuses/user_timeline', params, function(error, twt, response) 
 	{
 		if(error) console.error(error);
 		
-		console.log(tweets);  
+		console.log(twt);  
 		
 		res.redirect('/');
 	});

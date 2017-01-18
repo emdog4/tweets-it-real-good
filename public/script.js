@@ -9,7 +9,19 @@ function matchTweet()
 	
 	if (tweets) 
 	{
-		updateDiv(tweets);
+		var form = $('#tweets_array');
+		
+		form.empty();
+		
+		if(!reversed) 
+		{
+			tweets = tweets.reverse();
+		}
+				
+		tweets.forEach(function(tweet) 
+		{
+			$(form).append('<input type="text" value="' + tweet + '" name="tweets" readonly>');
+		});
 	}
 }
 
@@ -19,31 +31,34 @@ function resetTextarea()
 
 	$(ta).text('').focus();
 	
-	$('#tweets').empty();
+	$('#tweets_array').empty();
 	
 	autosize.update(ta);
 }
 
-function updateDiv(array) 
+
+var reversed = true;
+
+function reverseTweets(element)
 {
-	var div = $('#tweets');
+	reversed = !reversed;
 	
-	div.empty();
-	
-	array.forEach(function(item) 
-	{
-		$(div).append('<div class="tweet">' + item + '</div>');
-	});
+	$('#input textarea').trigger('propertychange');
 }
 
 
+// Bind events
+
 $(document).ready(function() 
 {
-    $('#input textarea').on('keydown focus', matchTweet);
+    $('#input textarea').on('input propertychange', matchTweet);
     
     $('#input').on('reset', resetTextarea);
 
 });
 
+$(document).on('input propertychange', '#input textarea', matchTweet);
 
-$(document).on('paste drop', '#input textarea', matchTweet);
+$(document).on('click', '#reverse', reverseTweets);
+
+//'" name="tweets.' + count + 

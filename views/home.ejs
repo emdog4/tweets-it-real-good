@@ -2,23 +2,22 @@
 <% include ../views/header %>
 
 <% if (locals.username) { %>
-	<p><a href="/home_timeline" alt="Home timeline"><%= username %></a> <a href="/user_timeline" alt="User timeline">tweets</a> it real good. [<a href="/logout" alt="Logout">logout</a>]</p>
+	<p><a href="/user_timeline" alt="User timeline"><%= username %></a> <a href="/home_timeline" alt="Home timeline">tweets</a> <a href="/faq" alt="FAQ">it real good</a>. [<a href="/logout" alt="Logout">logout</a>]</p>
 <% } %>
 
-<form id="input" action="/update" method="post">
-	
+<form id="input">
+
 	<textarea name="tweet" placeholder="What's Happening?"><% if (locals.tweet) { %><%= tweet %><% } %></textarea>
 	
-	<div id="buttons">
-		<button type="reset">Reset</button>
-		<button type="submit">Tweet</button>
-	</div>
-
 </form>
 
-<div id="tweets">
-
+<div id="buttons">
+	<button type="reset" form="input">Reset</button>
+	<button type="submit" form="tweets_array">Tweet</button>
+	<button id="reverse">Reverse Order</button>
 </div>
+
+<form id="tweets_array" action="/update" method="post"></form>
 
 </body>
 

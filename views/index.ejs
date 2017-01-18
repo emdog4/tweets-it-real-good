@@ -1,8 +1,14 @@
 <% include ../views/header %>
 
-<p><a href="<%= url %>"><img id="login" src="images/login.png" /></a></p>
+<% if (locals.token) { %>
 
-<p>You authentication token is: <%= token %></p>
+	<p><a href="<%= url %>"><img id="login" src="images/login.png" /></a></p>
+	
+<% } else { %>
+
+	<p>We did not obtain an authentication token on your behalf. This is an error. Please refresh the page and try again. If the problem persists contact the developer.</p>
+
+<% } %>
 
 </body>
 
