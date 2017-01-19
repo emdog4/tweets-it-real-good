@@ -6,6 +6,5 @@ WORKDIR /usr/src/app
 COPY package.json /usr/src/app
 RUN npm install
 
-COPY . /usr/src/app
-
-CMD [ "node", "./bin/www" ]
+EXPOSE 3000
+CMD /bin/bash

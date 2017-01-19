@@ -110,7 +110,7 @@ app.get('/login', function(req, res)
 	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
 		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
-		oauth_callback 	: process.env.APP_SIWT_CALLBACK
+		oauth_callback 	: process.env.APP_IP + ':3000/signin-with-twitter'
 	}
 	
 	request.post({ url : requestTokenEndpoint, oauth : dict }, function(error, response, body) 
