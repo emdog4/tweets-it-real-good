@@ -5,21 +5,13 @@
 require('dotenv').load();
 
 var express = require('express');
-var session = require('express-session');
-var MongoDBStore = require('connect-mongodb-session')(session);
+var cookieSession = require('cookie-session');
 
 var app = express();
 
 app.use(require('helmet')());
 
-var store = new MongoDBStore({ uri: 'mongodb://localhost:27017/tirg', collection: 'sessions' });
-
-store.on('error', function(error) 
-{
-	if (error) console.log(error);
-});
-
-app.use(session( { secret : process.env.APP_COOKIE_SECRET, cookie : { maxAge: 1000 * 60 * 60 * 24 * 14 }, store : store, resave : false, saveUninitialized : false } ));
+app.use(cookieSession({ name: 'session', keys: [process.env.APP_COOKIE_SECRET], maxAge: 24 * 60 * 60 * 1000 }));
 
 //parser application/x-www-form-urlencoded and application/json
 app.use(require('body-parser').urlencoded({ extended: true }));
@@ -55,7 +47,7 @@ function verifyCredentials(req, res, next)
 {
 	if (typeof(req.session.oauth_token) == "undefined" || typeof(req.session.oauth_token_secret) == "undefined") 
 	{
-		res.redirect('/login');
+		res.redirect('/login'); return;
 	} 
 		
 	var dict = 
@@ -80,50 +72,12 @@ function verifyCredentials(req, res, next)
 					next(); break;
 				case 401:
 				default:
-					console.error('invalid credentials'); res.redirect('/logout');
+					console.error('invalid credentials'); res.redirect('/logout'); return;
 			}
 		}
 		
 	});
 }
-
-
-function verifyCredentials(req, res, next) 
-{
-	if (typeof(req.session.oauth_token) == "undefined" || typeof(req.session.oauth_token_secret) == "undefined") 
-	{
-		res.redirect('/login');
-	} 
-		
-	var dict = 
-	{
-		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
-		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
-		token 			: req.session.oauth_token,
-		token_secret 	: req.session.oauth_token_secret
-	}
-	
-	request.get({ url : verifyCredentialsEndpoint, oauth : dict }, function(error, response, body) 
-	{
-		if (error) 
-		{
-			console.error(error);
-		} 
-		else 
-		{
-			switch (response.statusCode) 
-			{
-				case 200:
-					next(); break;
-				case 401:
-				default:
-					console.error('invalid credentials'); res.redirect('/logout');
-			}
-		}
-	});
-	
-}
-
 
 var twitter;
 
@@ -215,17 +169,9 @@ app.get('/signin-with-twitter', function(req, res)
 
 app.get('/logout', function(req, res) 
 {	
-	req.session.destroy(function(error) 
-	{
-		if (error) 
-		{
-			console.error(error); return;
-		} 
-		else 
-		{
-			res.redirect('/login');
-		}
-	});
+	req.session = null;
+	
+	res.redirect('/login');
 });
 
 
@@ -233,17 +179,33 @@ app.post('/update', verifyCredentials, initTwitterClient, function(req, res)
 {	
 	var tweets = req.body.tweets;
 		
-	tweets.forEach(function(tweet) 
+	console.log(tweets);
+	
+	if (typeof(tweets) == 'object') 
 	{		
-		var params = { status: tweet };
+		tweets.forEach(function(tweet) 
+		{		
+			var params = { status: tweet, trim_user: 'true' };
+			
+			twitter.post('statuses/update', params,  function(error, twt, response) 
+			{
+				if(error) console.error(error);
+				
+				console.log(twt); 
+			});
+		});
+	} 
+	else 
+	{	
+		var params = { status: tweets, trim_user: 'true' };
 		
 		twitter.post('statuses/update', params,  function(error, twt, response) 
 		{
 			if(error) console.error(error);
 			
 			console.log(twt); 
-		});
-	});
+		});	
+	}
 	res.redirect('/');
 });
 

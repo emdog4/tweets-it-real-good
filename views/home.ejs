@@ -2,7 +2,7 @@
 <% include ../views/header %>
 
 <% if (locals.username) { %>
-	<p><a href="/user_timeline" alt="User timeline"><%= username %></a> <a href="/home_timeline" alt="Home timeline">tweets</a> <a href="/faq" alt="FAQ">it real good</a>. [<a href="/logout" alt="Logout">logout</a>]</p>
+	<p><%= username %> tweets it real good. [<a href="/logout" alt="Logout">logout</a>]</p>
 <% } %>
 
 <form id="input">
