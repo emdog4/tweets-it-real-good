@@ -4,15 +4,12 @@ sign in with twitter implementation
 
 prereqs.:
 node.js and npm
-mongod
 
 create .env file in project root with the following
 APP_COOKIE_SECRET=
 APP_SIWT_CALLBACK=
 TWITTER_CONSUMER_KEY=
 TWITTER_CONSUMER_SECRET=
-
-start mongod
 
 cd into cloned dir
 npm install
