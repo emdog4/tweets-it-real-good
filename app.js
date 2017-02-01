@@ -22,16 +22,14 @@ const path = require('path');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-//app.use(require('morgan')('dev'));
-
 // Twitter Oauth endpoints
 var requestTokenEndpoint = 'https://api.twitter.com/oauth/request_token';
 var authenticateEndpoint = 'https://api.twitter.com/oauth/authenticate';
 var accessTokenEndpoint  = "https://api.twitter.com/oauth/access_token";
 
 // Twitter API endpoints
-var timelineUrl 				= 'https://api.twitter.com/1.1/statuses/user_timeline.json';
-var tweetUrl 					= 'https://api.twitter.com/1.1/statuses/update.json';
+var timelineUrl 		= 'https://api.twitter.com/1.1/statuses/user_timeline.json';
+var tweetUrl 			= 'https://api.twitter.com/1.1/statuses/update.json';
 var verifyCredentialsEndpoint 	= 'https://api.twitter.com/1.1/account/verify_credentials.json';
 
 var Twitter = require('twitter');
@@ -54,7 +52,7 @@ function verifyCredentials(req, res, next)
 	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
 		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
-		token 			: req.session.oauth_token,
+		token 		: req.session.oauth_token,
 		token_secret 	: req.session.oauth_token_secret
 	}
 	
@@ -110,7 +108,7 @@ app.get('/login', function(req, res)
 	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
 		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
-		oauth_callback 	: process.env.APP_IP + ':3000/signin-with-twitter'
+		oauth_callback 	: process.env.APP_SIWT_CALLBACK
 	}
 	
 	request.post({ url : requestTokenEndpoint, oauth : dict }, function(error, response, body) 
@@ -123,7 +121,7 @@ app.get('/login', function(req, res)
 		{
 			var data = querystring.parse(body);
 						
-			req.session.oauth_token 		= data.oauth_token;
+			req.session.oauth_token 	= data.oauth_token;
 			req.session.oauth_token_secret 	= data.oauth_token_secret;
 		
 			var signInWithTwitterURL = authenticateEndpoint + '?' + querystring.stringify({ oauth_token : req.session.oauth_token });
@@ -142,9 +140,9 @@ app.get('/signin-with-twitter', function(req, res)
 	{
 		consumer_key 	: process.env.TWITTER_CONSUMER_KEY,
 		consumer_secret : process.env.TWITTER_CONSUMER_SECRET,
-		token 			: req.session.oauth_token,
+		token 		: req.session.oauth_token,
 		token_secret 	: req.session.oauth_token_secret,
-		verifier 		: req.session.oauth_verifier
+		verifier 	: req.session.oauth_verifier
 	}
 	
 	request.post({ url : accessTokenEndpoint , oauth : dict }, function(error, response, body) 
@@ -157,9 +155,9 @@ app.get('/signin-with-twitter', function(req, res)
 		{
 			var data = querystring.parse(body);
 			
-			req.session.oauth_token 		= data.oauth_token;
+			req.session.oauth_token 	= data.oauth_token;
 			req.session.oauth_token_secret 	= data.oauth_token_secret;
-			req.session.screen_name 		= data.screen_name;
+			req.session.screen_name 	= data.screen_name;
 	
 			res.redirect('/');
 		}

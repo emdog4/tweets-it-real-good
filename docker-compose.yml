@@ -1,0 +1,32 @@
+
+tirga:
+        build: .
+        expose:
+                - 8080
+
+
+tirgb:
+        build: .
+        expose:
+                - 8080
+
+tirgc:
+        build: .
+        expose:
+                - 8080
+
+haproxy:
+        image: haproxy
+        volumes:
+                - ./haproxy:/usr/local/etc/haproxy
+        links:
+                - tirga
+                - tirgb
+                - tirgc
+        ports:
+                - "80:80"
+                - "70:70"
+
+        expose:
+                - "80"
+                - "70"
