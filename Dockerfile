@@ -8,6 +8,7 @@ RUN npm install
 
 COPY . /usr/src/app
 
-EXPOSE 3000
+EXPOSE 8080 
 
-CMD /bin/bash
+CMD ["node", "./bin/www"]
+
