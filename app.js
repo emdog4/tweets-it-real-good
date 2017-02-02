@@ -30,8 +30,8 @@ var authenticateEndpoint = 'https://api.twitter.com/oauth/authenticate';
 var accessTokenEndpoint  = "https://api.twitter.com/oauth/access_token";
 
 // Twitter API endpoints
-var timelineUrl 				= 'https://api.twitter.com/1.1/statuses/user_timeline.json';
-var tweetUrl 					= 'https://api.twitter.com/1.1/statuses/update.json';
+var timelineUrl			= 'https://api.twitter.com/1.1/statuses/user_timeline.json';
+var tweetUrl 			= 'https://api.twitter.com/1.1/statuses/update.json';
 var verifyCredentialsEndpoint 	= 'https://api.twitter.com/1.1/account/verify_credentials.json';
 
 var Twitter = require('twitter');
@@ -75,20 +75,7 @@ function verifyCredentials(req, res, next)
 					console.error('invalid credentials'); res.redirect('/logout'); return;
 			}
 		}
-		
 	});
-}
-
-var twitter;
-
-function initTwitterClient(req, res, next) 
-{
-	if (!twitter)
-	{
-		twitter = new Twitter({ consumer_key: process.env.TWITTER_CONSUMER_KEY,	consumer_secret: process.env.TWITTER_CONSUMER_SECRET, access_token_key: req.session.oauth_token, access_token_secret: req.session.oauth_token_secret });
-	}
-	
-	next();
 }
 
 
@@ -175,8 +162,10 @@ app.get('/logout', function(req, res)
 });
 
 
-app.post('/update', verifyCredentials, initTwitterClient, function(req, res) 
+app.post('/update', verifyCredentials, function(req, res) 
 {	
+	var twitter = new Twitter({ consumer_key: process.env.TWITTER_CONSUMER_KEY,	consumer_secret: process.env.TWITTER_CONSUMER_SECRET, access_token_key: req.session.oauth_token, access_token_secret: req.session.oauth_token_secret });
+
 	var tweets = req.body.tweets;
 		
 	console.log(tweets);
@@ -210,8 +199,10 @@ app.post('/update', verifyCredentials, initTwitterClient, function(req, res)
 });
 
 
-app.get('/home_timeline', verifyCredentials, initTwitterClient, function(req, res) 
+app.get('/home_timeline', verifyCredentials, function(req, res) 
 {	
+	var twitter = new Twitter({ consumer_key: process.env.TWITTER_CONSUMER_KEY,	consumer_secret: process.env.TWITTER_CONSUMER_SECRET, access_token_key: req.session.oauth_token, access_token_secret: req.session.oauth_token_secret });
+
 	var params = { count: 30 };
 	
 	twitter.get('statuses/home_timeline', params, function(error, twt, response) 
@@ -225,8 +216,10 @@ app.get('/home_timeline', verifyCredentials, initTwitterClient, function(req, re
 });
 
 
-app.get('/user_timeline', verifyCredentials, initTwitterClient, function(req, res) 
+app.get('/user_timeline', verifyCredentials, function(req, res) 
 {	
+	var twitter = new Twitter({ consumer_key: process.env.TWITTER_CONSUMER_KEY,	consumer_secret: process.env.TWITTER_CONSUMER_SECRET, access_token_key: req.session.oauth_token, access_token_secret: req.session.oauth_token_secret });
+
 	var params = { screen_name: req.session.user_name, count: 50, include_rts: 'true' };
 	
 	twitter.get('statuses/user_timeline', params, function(error, twt, response) 
